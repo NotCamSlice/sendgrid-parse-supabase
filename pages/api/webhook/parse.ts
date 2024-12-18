@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     // Save email data to Supabase
-    const { error } = await supabase.from('emails').insert([emailData]);
+    const { error } = await supabase.from('parsemails').insert([emailData]);
 
     if (error) {
       console.error('Supabase Error:', error);
