@@ -4,10 +4,7 @@
   "description": "An Express.js server for handling SendGrid Inbound Parse Webhooks, written in TypeScript and deployable to Vercel.",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "vercel-build": "tsc"
+    "vercel-build": "tsc --project tsconfig.server.json"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
