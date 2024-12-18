@@ -32,8 +32,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'No email field found in payload' });
     }
 
-    console.log('Raw Email Content:', rawEmail);
-
     // Extract text/plain and text/html content
     let text_content = '(No Text Content)';
     let html_content = '(No HTML Content)';
@@ -48,9 +46,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         html_content = part.slice(htmlStart).trim();
       }
     }
-
-    console.log('Extracted Text Content:', text_content);
-    console.log('Extracted HTML Content:', html_content);
 
     // Extract other fields from SendGrid payload
     const emailData = {
