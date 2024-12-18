@@ -3,13 +3,12 @@
     "target": "ES2020",
     "module": "CommonJS",
     "strict": true,
-    "allowJs": true,
-    "checkJs": true,
-    "noEmit": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "dist",
+    "rootDir": "src"
   },
-  "include": ["api/**/*", "api/**/*.js"],
+  "include": ["api/**/*", "src/**/*", "types/**/*"],
   "exclude": ["node_modules", "dist"]
 }
