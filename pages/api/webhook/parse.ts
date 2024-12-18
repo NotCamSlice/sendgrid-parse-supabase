@@ -21,10 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Read the raw body
     const body = await getRawBody(req);
-
-    // Parse the email
     const parsed: ParsedMail = await simpleParser(body);
 
     // Extract email details
@@ -46,7 +43,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     // Save email data to Supabase
-    const { error } = await supabase.from('parsemails').insert([emailData]);
+    const { error } = await supabase.from('parsemails').insert([
+      {
+        from_email: emailData.from,
+        to_email: emailData.to,
+        subject: emailData.subject,
+        text_content: emailData.text,
+        html_content: emailData.html,
+        attachments: emailData.attachments ? JSON.stringify(emailData.attachments) : null,
+      },
+    ]);
 
     if (error) {
       console.error('Supabase Error:', error);
