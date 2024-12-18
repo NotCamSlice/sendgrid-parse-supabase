@@ -23,8 +23,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const body = await getRawBody(req);
     const parsed: ParsedMail = await simpleParser(body);
-
-    // Extract email details
+  
+    console.log('Parsed Email:', parsed);
+  
     const emailData = {
       from: parsed.from?.text || 'Unknown sender',
       to: Array.isArray(parsed.to)
@@ -34,32 +35,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       text: parsed.text || null,
       html: parsed.html || null,
       attachments: parsed.attachments
-      ? parsed.attachments.map(att => ({
-          filename: att.filename || 'Unknown',
-          contentType: att.contentType,
-          size: att.size,
-        }))
-      : null,
+        ? parsed.attachments.map(att => ({
+            filename: att.filename || 'Unknown',
+            contentType: att.contentType,
+            size: att.size,
+          }))
+        : null,
     };
-
-    // Save email data to Supabase
-    const { error } = await supabase.from('parsemails').insert([
-      {
-        from_email: emailData.from,
-        to_email: emailData.to,
-        subject: emailData.subject,
-        text_content: emailData.text,
-        html_content: emailData.html,
-        attachments: emailData.attachments ? JSON.stringify(emailData.attachments) : null,
-      },
-    ]);
-
+  
+    console.log('Email Data:', emailData);
+  
+    const { error } = await supabase.from('parsemails').insert([{
+      from_email: emailData.from,
+      to_email: emailData.to,
+      subject: emailData.subject,
+      text_content: emailData.text,
+      html_content: emailData.html,
+      attachments: emailData.attachments ? JSON.stringify(emailData.attachments) : null,
+    }]);
+  
     if (error) {
       console.error('Supabase Error:', error);
-      res.status(500).json({ error: 'Failed to store email data' });
-      return;
+    } else {
+      console.log('Email saved successfully!');
     }
-
+  
     res.status(200).json({ message: 'Email processed successfully' });
   } catch (err) {
     console.error('Processing Error:', err);
