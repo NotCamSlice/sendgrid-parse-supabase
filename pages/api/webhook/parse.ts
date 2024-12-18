@@ -36,11 +36,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       subject: parsed.subject || null,
       text: parsed.text || null,
       html: parsed.html || null,
-      attachments: parsed.attachments?.map(att => ({
-        filename: att.filename || 'Unknown',
-        contentType: att.contentType,
-        size: att.size,
-      })),
+      attachments: parsed.attachments
+      ? parsed.attachments.map(att => ({
+          filename: att.filename || 'Unknown',
+          contentType: att.contentType,
+          size: att.size,
+        }))
+      : null,
     };
 
     // Save email data to Supabase
