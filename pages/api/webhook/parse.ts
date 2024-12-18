@@ -18,7 +18,7 @@ export const config = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Parse the form-data payload from SendGrid
+    // Parse the form-data payload
     await new Promise((resolve, reject) => {
       upload(req as any, {} as any, (err: any) => {
         if (err) return reject(err);
@@ -26,34 +26,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     });
 
-    // Log the incoming payload for debugging
-    console.log('Incoming Payload:', req.body);
+    // Get the raw email from SendGrid payload
+    const rawEmail = req.body.email;
+    if (!rawEmail) {
+      return res.status(400).json({ error: 'No email field found in payload' });
+    }
 
-    // Extract fields from SendGrid's form-data
-    const from_email = req.body.from || 'Unknown sender';
-    const to_email = req.body.to || 'Unknown recipient';
-    const subject = req.body.subject || '(No Subject)';
-    const text_content = req.body.text || '(No Text Content)';
-    const html_content = req.body.html || '(No HTML Content)';
+    console.log('Raw Email Content:', rawEmail);
 
-    // Handle attachments
-    const attachments = req.body.attachments ? JSON.parse(req.body.attachments) : [];
+    // Extract text/plain and text/html content
+    let text_content = '(No Text Content)';
+    let html_content = '(No HTML Content)';
 
-    // Construct email data
+    const parts = rawEmail.split('--'); // Split by multipart boundary
+    for (const part of parts) {
+      if (part.includes('Content-Type: text/plain')) {
+        const textStart = part.indexOf('\r\n\r\n') + 4; // Skip headers
+        text_content = part.slice(textStart).trim();
+      } else if (part.includes('Content-Type: text/html')) {
+        const htmlStart = part.indexOf('\r\n\r\n') + 4; // Skip headers
+        html_content = part.slice(htmlStart).trim();
+      }
+    }
+
+    console.log('Extracted Text Content:', text_content);
+    console.log('Extracted HTML Content:', html_content);
+
+    // Extract other fields from SendGrid payload
     const emailData = {
-      from_email,
-      to_email,
-      subject,
+      from_email: req.body.from || 'Unknown sender',
+      to_email: req.body.to || 'Unknown recipient',
+      subject: req.body.subject || '(No Subject)',
       text_content,
       html_content,
-      attachments,
+      attachments: req.body.attachments ? JSON.parse(req.body.attachments) : [],
     };
 
     console.log('Parsed Email Data:', emailData);
 
-    // Save email data to Supabase
+    // Save the email data to Supabase
     const { error } = await supabase.from('parsemails').insert([emailData]);
-
     if (error) {
       console.error('Supabase Error:', error);
       return res.status(500).json({ error: 'Failed to save email data to Supabase' });
