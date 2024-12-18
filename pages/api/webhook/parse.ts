@@ -1,44 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { simpleParser, ParsedMail } from 'mailparser';
+import getRawBody from 'raw-body';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Initialize Supabase
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 
 export const config = {
-  runtime: 'edge',
+  api: {
+    bodyParser: false, // Disable Next.js default body parser
+  },
 };
 
-export default async function handler(req: NextRequest): Promise<Response> {
-  const url = new URL(req.url);
-  const key = url.searchParams.get('key');
-
-  if (key !== process.env.WEBHOOK_SECRET) {
-    console.warn('Invalid secret key:', key);
-    return NextResponse.json({ error: 'Invalid secret key' }, { status: 401 });
-  }
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
-    const body = await req.text(); // Get raw body
+    // Read the raw body
+    const body = await getRawBody(req);
+
+    // Parse the email
     const parsed: ParsedMail = await simpleParser(body);
 
-    // Extract spam-related headers
-    const spamFlag: boolean = parsed.headers.get('x-spam-flag') === 'YES';
-    const spamScore: number = parseFloat(parsed.headers.get('x-spam-score') as string) || 0;
-
-    const recipient = Array.isArray(parsed.to)
-      ? parsed.to.map(addr => addr.text).join(', ')
-      : parsed.to?.text || 'Unknown sender';
-
-    // Build email data
+    // Extract email details
     const emailData = {
       from: parsed.from?.text || 'Unknown sender',
-      to: recipient,
+      to: Array.isArray(parsed.to)
+        ? parsed.to.map(addr => addr.text).join(', ')
+        : parsed.to?.text || 'Unknown recipient',
       subject: parsed.subject || null,
       text: parsed.text || null,
       html: parsed.html || null,
@@ -46,33 +38,21 @@ export default async function handler(req: NextRequest): Promise<Response> {
         filename: att.filename || 'Unknown',
         contentType: att.contentType,
         size: att.size,
-      })) || null,
-      spamFlag,
-      spamScore,
+      })),
     };
 
-    // Save to Supabase
-    const { error } = await supabase.from('emails').insert([
-      {
-        from_email: emailData.from,
-        to_email: emailData.to,
-        subject: emailData.subject,
-        text_content: emailData.text,
-        html_content: emailData.html,
-        attachments: emailData.attachments ? JSON.stringify(emailData.attachments) : null,
-        spam_flag: emailData.spamFlag,
-        spam_score: emailData.spamScore,
-      },
-    ]);
+    // Save email data to Supabase
+    const { error } = await supabase.from('emails').insert([emailData]);
 
     if (error) {
-      console.error('Error saving to Supabase:', error);
-      return NextResponse.json({ error: 'Failed to store email data' }, { status: 500 });
+      console.error('Supabase Error:', error);
+      res.status(500).json({ error: 'Failed to store email data' });
+      return;
     }
 
-    return NextResponse.json({ message: 'Webhook processed and data stored in Supabase' });
+    res.status(200).json({ message: 'Email processed successfully' });
   } catch (err) {
-    console.error('Error processing email:', err);
-    return NextResponse.json({ error: 'Failed to process email' }, { status: 500 });
+    console.error('Processing Error:', err);
+    res.status(500).json({ error: 'Failed to process email' });
   }
 }
