@@ -1,23 +1,24 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { simpleParser, ParsedMail } from 'mailparser';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 
+// Supabase client setup
 const supabaseUrl = 'https://wrldtznrubxbyxpxodst.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybGR0em5ydWJ4Ynl4cHhvZHN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyMTE3OTQsImV4cCI6MjA0Njc4Nzc5NH0.XgyOZqzk9c9IyupxsbWewQ8wCUQRrY9y9p9KdrO1jZc';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Multer setup for parsing form-data
 const upload = multer().none();
 
 export const config = {
   api: {
-    bodyParser: false, // Disable Next.js default body parser
+    bodyParser: false, // Disable Next.js default body parser for form-data
   },
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Parse the form-data payload
+    // Parse the form-data payload from SendGrid
     await new Promise((resolve, reject) => {
       upload(req as any, {} as any, (err: any) => {
         if (err) return reject(err);
@@ -25,47 +26,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     });
 
-    // Get the raw email content
-    const rawEmail = req.body.envelope || req.body['email'] || req.body['raw'];
-    if (!rawEmail) {
-      return res.status(400).json({ error: 'Raw email content not found in request' });
-    }
+    // Log the incoming payload for debugging
+    console.log('Incoming Payload:', req.body);
 
-    // Parse the raw email content
-    const parsed: ParsedMail = await simpleParser(rawEmail);
-    console.log('Parsed Email:', parsed);
+    // Extract fields from SendGrid's form-data
+    const from_email = req.body.from || 'Unknown sender';
+    const to_email = req.body.to || 'Unknown recipient';
+    const subject = req.body.subject || '(No Subject)';
+    const text_content = req.body.text || '(No Text Content)';
+    const html_content = req.body.html || '(No HTML Content)';
 
-    // Extract email data
+    // Handle attachments
+    const attachments = req.body.attachments ? JSON.parse(req.body.attachments) : [];
+
+    // Construct email data
     const emailData = {
-      from_email: parsed.from?.text || 'Unknown sender',
-      to_email: Array.isArray(parsed.to)
-        ? parsed.to.map(addr => addr.text).join(', ')
-        : parsed.to?.text || 'Unknown recipient',
-      subject: parsed.subject || '(No Subject)',
-      text_content: parsed.text || '(No Text Content)',
-      html_content: parsed.html || '(No HTML Content)',
-      attachments: parsed.attachments
-        ? parsed.attachments.map(att => ({
-            filename: att.filename || 'Unknown',
-            contentType: att.contentType,
-            size: att.size,
-          }))
-        : null,
+      from_email,
+      to_email,
+      subject,
+      text_content,
+      html_content,
+      attachments,
     };
 
-    console.log('Email Data:', emailData);
+    console.log('Parsed Email Data:', emailData);
 
     // Save email data to Supabase
-    const { error } = await supabase.from('parsemails').insert([
-      {
-        from_email: emailData.from_email,
-        to_email: emailData.to_email,
-        subject: emailData.subject,
-        text_content: emailData.text_content,
-        html_content: emailData.html_content,
-        attachments: emailData.attachments ? JSON.stringify(emailData.attachments) : null,
-      },
-    ]);
+    const { error } = await supabase.from('parsemails').insert([emailData]);
 
     if (error) {
       console.error('Supabase Error:', error);
