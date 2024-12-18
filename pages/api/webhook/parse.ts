@@ -4,7 +4,9 @@ import { simpleParser, ParsedMail } from 'mailparser';
 import getRawBody from 'raw-body';
 
 // Initialize Supabase
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
+const supabaseUrl = 'https://wrldtznrubxbyxpxodst.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybGR0em5ydWJ4Ynl4cHhvZHN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyMTE3OTQsImV4cCI6MjA0Njc4Nzc5NH0.XgyOZqzk9c9IyupxsbWewQ8wCUQRrY9y9p9KdrO1jZc';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const config = {
   api: {
