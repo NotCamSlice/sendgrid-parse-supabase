@@ -31,10 +31,14 @@ export default async function handler(req: NextRequest): Promise<Response> {
     const spamFlag: boolean = parsed.headers.get('x-spam-flag') === 'YES';
     const spamScore: number = parseFloat(parsed.headers.get('x-spam-score') as string) || 0;
 
+    const recipient = Array.isArray(parsed.to)
+      ? parsed.to.map(addr => addr.text).join(', ')
+      : parsed.to?.text || 'Unknown sender';
+
     // Build email data
     const emailData = {
       from: parsed.from?.text || 'Unknown sender',
-      to: parsed.to?.text || 'Unknown recipient',
+      to: recipient,
       subject: parsed.subject || null,
       text: parsed.text || null,
       html: parsed.html || null,
