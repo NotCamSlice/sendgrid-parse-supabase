@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "module": "ESNext",
     "strict": true,
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
     "checkJs": false,
-    "outDir": "dist",
-    "rootDir": "src"
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["api/**/*", "src/**/*", "types/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["pages", "types"]
 }

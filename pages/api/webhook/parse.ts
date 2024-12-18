@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { simpleParser, ParsedMail } from 'mailparser';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPBASE_KEY!;
+const supabaseKey = process.env.SUPABASE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const config = {
