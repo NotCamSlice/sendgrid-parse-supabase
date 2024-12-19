@@ -1,11 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase client setup
-const supabaseUrl = 'https://wrldtznrubxbyxpxodst.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybGR0em5ydWJ4Ynl4cHhvZHN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyMTE3OTQsImV4cCI6MjA0Njc4Nzc5NH0.XgyOZqzk9c9IyupxsbWewQ8wCUQRrY9y9p9KdrO1jZc';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/lib/supabase';
 
 // Multer setup for parsing form-data
 const upload = multer().none();

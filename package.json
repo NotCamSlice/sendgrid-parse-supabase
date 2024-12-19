@@ -1,7 +1,7 @@
 {
-  "name": "sendgrid-webhook-server-gtapolicemods",
+  "name": "gtapolicemods-backend",
   "version": "1.0.0",
-  "description": "A webhook server for handling SendGrid Inbound Parse Webhooks, written in TypeScript and deployable to Vercel.",
+  "description": "GTAPoliceMods Backend, written in TypeScript and deployable to Vercel.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
