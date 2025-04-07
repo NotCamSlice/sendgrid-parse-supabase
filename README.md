@@ -1,18 +1,18 @@
-# 📬 SendGrid Parse Webhook Handler (TypeScript)
+# 📬 SendGrid Parse Webhook Handler (TypeScript + Supabase)
 
-A lightweight TypeScript-based service for capturing incoming emails via SendGrid's Inbound Parse Webhook and storing them in a database for later use.
+A lightweight TypeScript-based webhook handler that receives and stores incoming email data from [SendGrid's Inbound Parse Webhook](https://docs.sendgrid.com/for-developers/parsing-email/setting-up-the-inbound-parse-webhook) into **Supabase**.
 
-> ⚠️ This project was originally developed as a temporary solution for [GTAPoliceMods](https://gtapolicemods.com) and is now being open-sourced after my departure from the team. Feel free to use, improve, and build on it!
+> 🛠 Originally built for [GTAPoliceMods](https://gtapolicemods.com) as a temporary internal solution. Now released for the open-source community following my departure from the team.
 
 ---
 
 ## 💡 Features
 
-- Built in **TypeScript** for type safety and maintainability
-- Handles **SendGrid Inbound Parse Webhook** payloads
-- Saves parsed email data into a **database** (configurable)
-- Lightweight and easily extendable
-- Clean, minimal structure suitable for production use or prototyping
+- ✅ TypeScript-first structure
+- ✅ Listens for **SendGrid Inbound Parse Webhook** payloads
+- ✅ Stores parsed emails in **Supabase** (PostgreSQL-backed)
+- ✅ Easily extendable for custom workflows
+- ✅ Optional secret key verification
 
 ---
 
@@ -20,11 +20,13 @@ A lightweight TypeScript-based service for capturing incoming emails via SendGri
 
 ### Prerequisites
 
-- Node.js (v18+ recommended)
-- A database (e.g., MongoDB, PostgreSQL, MySQL – depending on your adapter)
-- A SendGrid account with Inbound Parse Webhook configured
+- Node.js (v18+)
+- A [Supabase](https://supabase.com) project (free tier works fine)
+- A configured SendGrid Inbound Parse Webhook
 
-### Installation
+---
+
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/sendgrid-parse-ts.git
